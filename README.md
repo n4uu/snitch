@@ -76,8 +76,7 @@ Kali packages almost every tool, so this is a one-liner and fast:
 
 ```bash
 sudo apt update
-sudo apt install -y golang-go git nmap ffuf sqlmap \
-    subfinder httpx-toolkit naabu nuclei katana dalfox
+sudo apt install -y golang-go git nmap ffuf sqlmap subfinder httpx-toolkit naabu nuclei
 sudo ln -sf "$(command -v httpx-toolkit)" /usr/local/bin/httpx   # ProjectDiscovery httpx
 nuclei -update-templates
 ```
@@ -97,8 +96,14 @@ That's it. Point it at a target you own or are authorised to test:
 ./snitch scan yourdomain.com --project demo --report html --open
 ```
 
-> `crlfuzz` (CRLF testing) isn't in apt — optional:
-> `go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest`.
+> **Optional stages** — `katana` (crawler), `dalfox` (XSS) and `crlfuzz` (CRLF)
+> aren't in apt. snitch skips them with a warning if absent; install them with
+> `go install` only if you want crawling and injection testing:
+> ```bash
+> go install github.com/projectdiscovery/katana/cmd/katana@latest
+> go install github.com/hahwul/dalfox/v2@latest
+> go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest
+> ```
 
 ### Other distros / building the tools from source
 
