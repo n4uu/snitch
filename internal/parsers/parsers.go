@@ -576,6 +576,9 @@ func ParseDalfoxJSON(path string) ([]ParsedFinding, error) {
 
 	var out []ParsedFinding
 	for _, p := range pocs {
+		if strings.TrimSpace(p.Data) == "" {
+			continue // no location to act on / report — skip it
+		}
 		_, host, port := splitURL(p.Data)
 		sev := strings.ToLower(strings.TrimSpace(p.Severity))
 		if sev == "" {
@@ -667,8 +670,13 @@ func splitURL(raw string) (scheme, host string, port int) {
 		scheme = raw[:i]
 		rest = raw[i+3:]
 	}
-	if slash := strings.IndexByte(rest, '/'); slash != -1 {
-		rest = rest[:slash]
+	// Cut the authority off at the first path / query / fragment delimiter —
+	// not just '/', or a URL like "host?q=1" (no path) keeps the query in host.
+	if i := strings.IndexAny(rest, "/?#"); i != -1 {
+		rest = rest[:i]
+	}
+	if at := strings.LastIndexByte(rest, '@'); at != -1 { // drop any user:pass@
+		rest = rest[at+1:]
 	}
 	host = rest
 	if colon := strings.LastIndexByte(rest, ':'); colon != -1 {

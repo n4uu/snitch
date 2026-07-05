@@ -274,7 +274,7 @@ func RunNaabu(ws *store.Workspace, hosts []string, timeout time.Duration) (int, 
 // RunKatana crawls the web targets for linked endpoints and records them as
 // paths. Its URLs (especially those with query parameters) are the raw material
 // for later injection testing (XSS/SQLi).
-func RunKatana(ws *store.Workspace, webTargets []string, timeout time.Duration) (int, error) {
+func RunKatana(ws *store.Workspace, webTargets []string, target string, hosts []string, timeout time.Duration) (int, error) {
 	if len(webTargets) == 0 {
 		return 0, nil
 	}
@@ -309,8 +309,17 @@ func RunKatana(ws *store.Workspace, webTargets []string, timeout time.Duration) 
 		return 0, err
 	}
 
-	newCount := 0
+	// Only keep endpoints on in-scope hosts — katana follows links to CDNs,
+	// social media and other third parties, which are just noise in the report
+	// (and out of scope for anything active).
+	inScope := scopeMatcher(target, hosts)
+	newCount, kept, external := 0, 0, 0
 	for _, e := range endpoints {
+		if !inScope(e.Host) {
+			external++
+			continue
+		}
+		kept++
 		isNew, err := ws.UpsertPath(&store.WebPath{
 			Host: e.Host, URL: e.URL, SourceTool: "katana",
 		})
@@ -322,7 +331,11 @@ func RunKatana(ws *store.Workspace, webTargets []string, timeout time.Duration) 
 		}
 	}
 	ws.FinishRun(run, "completed", 0, 0, newCount)
-	banner("[+] katana: done in %s — %d endpoint(s), %d new", fmtElapsed(start), len(endpoints), newCount)
+	msg := fmt.Sprintf("[+] katana: done in %s — %d in-scope endpoint(s), %d new", fmtElapsed(start), kept, newCount)
+	if external > 0 {
+		msg += fmt.Sprintf(" (%d external skipped)", external)
+	}
+	banner(msg)
 	return newCount, nil
 }
 
@@ -851,7 +864,7 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 	}
 	// 7. katana: crawl the web targets for linked endpoints.
 	if !opts.SkipKatana {
-		if _, kErr := RunKatana(ws, webTargets, opts.Timeout); kErr != nil {
+		if _, kErr := RunKatana(ws, webTargets, target, hosts, opts.Timeout); kErr != nil {
 			warnings = append(warnings, kErr.Error())
 			banner("[!] katana: %v", kErr)
 		}
@@ -955,21 +968,28 @@ func dedupeParamURLs(urls []string) []string {
 	return out
 }
 
-// inScopeURLs keeps only URLs whose host is the target, a subdomain of it, or
-// one of the enumerated hosts. Used to gate the injection stage so active
-// payloads never reach a third-party host katana merely linked to.
-func inScopeURLs(urls []string, target string, hosts []string) []string {
+// scopeMatcher returns a predicate reporting whether a host is in scope: the
+// target itself, one of the enumerated hosts, or a subdomain of the target.
+func scopeMatcher(target string, hosts []string) func(host string) bool {
 	target = strings.ToLower(strings.TrimSpace(target))
 	suffix := "." + target
 	inHosts := make(map[string]bool, len(hosts))
 	for _, h := range hosts {
 		inHosts[strings.ToLower(h)] = true
 	}
+	return func(host string) bool {
+		host = strings.ToLower(host)
+		return host == target || inHosts[host] || strings.HasSuffix(host, suffix)
+	}
+}
+
+// inScopeURLs keeps only URLs whose host is in scope. Used to gate the injection
+// stage so active payloads never reach a third-party host katana linked to.
+func inScopeURLs(urls []string, target string, hosts []string) []string {
+	inScope := scopeMatcher(target, hosts)
 	var out []string
 	for _, u := range urls {
-		_, host, _ := parsers.URLParts(u)
-		host = strings.ToLower(host)
-		if host == target || inHosts[host] || strings.HasSuffix(host, suffix) {
+		if _, host, _ := parsers.URLParts(u); inScope(host) {
 			out = append(out, u)
 		}
 	}

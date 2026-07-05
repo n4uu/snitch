@@ -146,4 +146,11 @@ func TestSplitURL(t *testing.T) {
 	if scheme != "http" || host != "a.example.com" || port != 8080 {
 		t.Errorf("explicit port wrong: %s %s %d", scheme, host, port)
 	}
+	// query right after the host (no path) must not end up inside the host.
+	if _, host, _ = splitURL("https://example.com?pag=cultgva"); host != "example.com" {
+		t.Errorf("query leaked into host: %q", host)
+	}
+	if _, host, _ = splitURL("https://user:pass@example.com/x"); host != "example.com" {
+		t.Errorf("userinfo leaked into host: %q", host)
+	}
 }
