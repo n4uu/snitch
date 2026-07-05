@@ -207,8 +207,9 @@ func SARIF(w io.Writer, ws *store.Workspace) error {
 		Version: "2.1.0",
 		Runs: []sarifRun{{
 			Tool: sarifTool{Driver: sarifDriver{
-				Name:  "snitch",
-				Rules: rules,
+				Name:           "snitch",
+				InformationURI: "https://github.com/n4uu/snitch",
+				Rules:          rules,
 			}},
 			Results: results,
 		}},
