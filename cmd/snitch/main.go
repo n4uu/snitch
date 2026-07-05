@@ -153,6 +153,8 @@ type scanFlags struct {
 	skipCrlfuzz   *bool
 	sqli          *bool
 	sqliMax       *int
+	enumOnly      *bool
+	fullPorts     *bool
 	workers       *int
 	timeout       *time.Duration
 }
@@ -173,13 +175,15 @@ func addScanFlags(fs *flag.FlagSet) *scanFlags {
 		skipCrlfuzz:   fs.Bool("skip-crlfuzz", false, "skip CRLF-injection testing (crlfuzz)"),
 		sqli:          fs.Bool("sqli", false, "enable active SQLi testing with sqlmap (opt-in)"),
 		sqliMax:       fs.Int("sqli-max", 15, "max URLs to hand to sqlmap"),
+		enumOnly:      fs.Bool("enum-only", false, "enumeration only: skip nuclei/dalfox/crlfuzz/sqlmap (e.g. OSCP-legal recon)"),
+		fullPorts:     fs.Bool("full-ports", false, "scan all 65535 ports with naabu and nmap, not just the top ports"),
 		workers:       fs.Int("workers", 5, "max concurrent ffuf jobs"),
 		timeout:       fs.Duration("timeout", 30*time.Minute, "per-tool timeout"),
 	}
 }
 
 func (s *scanFlags) chainOptions() orchestrator.ChainOptions {
-	return orchestrator.ChainOptions{
+	opts := orchestrator.ChainOptions{
 		Wordlist:      *s.wordlist,
 		SkipSubfinder: *s.skipSubfinder,
 		SkipNaabu:     *s.skipNaabu,
@@ -193,9 +197,19 @@ func (s *scanFlags) chainOptions() orchestrator.ChainOptions {
 		SkipCrlfuzz:   *s.skipCrlfuzz,
 		SQLi:          *s.sqli,
 		SQLiMax:       *s.sqliMax,
+		FullPorts:     *s.fullPorts,
 		MaxWorkers:    *s.workers,
 		Timeout:       *s.timeout,
 	}
+	// enum-only keeps discovery (subfinder/naabu/httpx/nmap/ffuf/katana) but
+	// drops every automated vuln-scan / exploitation stage.
+	if *s.enumOnly {
+		opts.SkipNuclei = true
+		opts.SkipDalfox = true
+		opts.SkipCrlfuzz = true
+		opts.SQLi = false
+	}
+	return opts
 }
 
 // scanBoolFlags are the value-less flags common to scan and monitor, needed by
@@ -205,6 +219,7 @@ func scanBoolFlags() map[string]bool {
 		"skip-subfinder": true, "skip-naabu": true, "skip-httpx": true,
 		"skip-nmap": true, "skip-nuclei": true, "skip-ffuf": true, "skip-katana": true,
 		"skip-dalfox": true, "skip-crlfuzz": true, "sqli": true,
+		"enum-only": true, "full-ports": true,
 	}
 }
 
