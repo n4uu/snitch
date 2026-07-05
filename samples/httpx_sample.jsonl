@@ -1,0 +1,3 @@
+{"url":"https://demo.local","input":"demo.local","host":"demo.local","port":"443","scheme":"https","status_code":200,"title":"Demo Home","webserver":"nginx","tech":["Nginx","PHP"]}
+{"url":"https://api.demo.local","input":"api.demo.local","host":"api.demo.local","port":443,"scheme":"https","status_code":401,"title":"","webserver":"nginx","tech":["Nginx"]}
+{"url":"http://dev.demo.local:8080","input":"dev.demo.local:8080","host":"dev.demo.local","port":8080,"scheme":"http","status_code":200,"title":"Dev Panel","tech":["Express"]}

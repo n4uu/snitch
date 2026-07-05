@@ -1,0 +1,5 @@
+https://demo.local/
+https://demo.local/login?next=/admin
+https://demo.local/search?q=test
+https://api.demo.local/v1/users?id=1
+https://demo.local/

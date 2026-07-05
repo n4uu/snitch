@@ -1,0 +1,4 @@
+demo.local
+www.demo.local
+api.demo.local
+dev.demo.local

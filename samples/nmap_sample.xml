@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nmaprun scanner="nmap">
+  <host>
+    <address addr="192.168.56.10" addrtype="ipv4"/>
+    <hostnames><hostname name="demo.local"/></hostnames>
+    <ports>
+      <port protocol="tcp" portid="22">
+        <state state="open"/>
+        <service name="ssh" product="OpenSSH" version="8.9p1"/>
+      </port>
+      <port protocol="tcp" portid="80">
+        <state state="open"/>
+        <service name="http" product="nginx" version="1.24.0"/>
+      </port>
+      <port protocol="tcp" portid="443">
+        <state state="open"/>
+        <service name="ssl/http" product="nginx" version="1.24.0"/>
+      </port>
+      <port protocol="tcp" portid="3306">
+        <state state="closed"/>
+        <service name="mysql"/>
+      </port>
+    </ports>
+  </host>
+</nmaprun>
