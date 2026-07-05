@@ -219,7 +219,7 @@ func RunHttpx(ws *store.Workspace, hosts []string, timeout time.Duration) ([]str
 
 // RunNaabu fast-scans hosts for open ports and records them as assets, widening
 // coverage to ports on subdomains that a target-only nmap run would miss.
-func RunNaabu(ws *store.Workspace, hosts []string, timeout time.Duration) (int, error) {
+func RunNaabu(ws *store.Workspace, hosts []string, allPorts bool, timeout time.Duration) (int, error) {
 	if len(hosts) == 0 {
 		return 0, nil
 	}
@@ -242,7 +242,11 @@ func RunNaabu(ws *store.Workspace, hosts []string, timeout time.Duration) (int, 
 
 	banner("[*] naabu: port-scanning %d host(s) …", len(hosts))
 	start := time.Now()
-	cmd := exec.CommandContext(ctx, "naabu", "-list", inFile, "-json", "-o", outFile, "-silent")
+	naabuArgs := []string{"-list", inFile, "-json", "-o", outFile, "-silent"}
+	if allPorts {
+		naabuArgs = append(naabuArgs, "-p", "-") // all 65535 ports
+	}
+	cmd := exec.CommandContext(ctx, "naabu", naabuArgs...)
 	if err := runStreaming(cmd, "naabu", false, true); err != nil {
 		ws.FinishRun(run, "failed", 0, 0, 0)
 		return 0, fmt.Errorf("naabu failed after %s: %w", fmtElapsed(start), err)
@@ -770,6 +774,7 @@ type ChainOptions struct {
 	SkipCrlfuzz   bool
 	SQLi          bool // opt-in: sqlmap actively tests for SQL injection
 	SQLiMax       int  // cap on URLs handed to sqlmap
+	FullPorts     bool // scan all 65535 ports (naabu + nmap), not just the top ports
 	MaxWorkers    int
 	Timeout       time.Duration
 }
@@ -800,7 +805,7 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 
 	// 2. naabu: fast port sweep across every host (breadth nmap-on-target misses).
 	if !opts.SkipNaabu {
-		if _, nErr := RunNaabu(ws, hosts, opts.Timeout); nErr != nil {
+		if _, nErr := RunNaabu(ws, hosts, opts.FullPorts, opts.Timeout); nErr != nil {
 			warnings = append(warnings, nErr.Error())
 			banner("[!] naabu: %v", nErr)
 		}
@@ -825,7 +830,11 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 			assets, err = IngestNmapXML(ws, opts.NmapXML, target)
 		}
 	} else {
-		assets, err = RunNmap(ws, target, nil, opts.Timeout)
+		var nmapArgs []string
+		if opts.FullPorts {
+			nmapArgs = []string{"-p-"}
+		}
+		assets, err = RunNmap(ws, target, nmapArgs, opts.Timeout)
 	}
 	if err != nil {
 		return nil, err

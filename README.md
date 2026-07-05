@@ -130,6 +130,12 @@ That runs the whole chain and pops a correlated HTML report open. More:
 # Add active SQL-injection testing with sqlmap (opt-in; scoped & deduped param URLs)
 ./snitch scan example.com --project acme --sqli
 
+# A lab box by IP, all 65535 ports (subfinder auto-skips for an IP)
+./snitch scan 10.10.10.5 --project lab --full-ports
+
+# Enumeration only — skips nuclei/dalfox/crlfuzz/sqlmap (e.g. OSCP-legal recon)
+./snitch scan 10.10.10.5 --project lab --enum-only --full-ports
+
 # Watch a target and get pinged on Discord/Slack when something new appears
 ./snitch monitor example.com --project acme \
     --notify https://discord.com/api/webhooks/XXX/YYY --interval 6h
