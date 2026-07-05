@@ -1,5 +1,8 @@
 # snitch
 
+[![CI](https://github.com/n4uu/snitch/actions/workflows/ci.yml/badge.svg)](https://github.com/n4uu/snitch/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/n4uu/snitch)](https://goreportcard.com/report/github.com/n4uu/snitch)
+
 **The recon tool that snitches on your attack surface.**
 
 `snitch` chains subfinder → naabu → httpx → Nmap → Nuclei → ffuf → katana into
