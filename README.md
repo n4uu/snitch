@@ -110,33 +110,55 @@ sudo ln -sf "$(go env GOPATH)"/bin/* /usr/local/bin/
 
 ## Quickstart
 
+All you need is a **target** (a bare domain *or* a full URL — snitch normalizes
+it) and a **project** name to store results under. ffuf uses the bundled
+`wordlists/common.txt` by default, so you don't have to pass one:
+
 ```bash
-# Full chain (flags can go in any order — target position is normalized)
-./snitch scan example.com --project acme --wordlist /usr/share/wordlists/dirb/common.txt
+./snitch scan example.com --project acme --report html --open
+```
 
-# One shot: scan, then write and open the HTML report automatically
-./snitch scan example.com --project acme --wordlist wl.txt --report html --open
+That runs the whole chain and pops a correlated HTML report open. More:
 
-# Add active SQL-injection testing with sqlmap (opt-in, tests crawled param URLs)
-./snitch scan example.com --project acme --wordlist wl.txt --sqli
+```bash
+# A full URL is fine too
+./snitch scan https://example.com/ --project acme
+
+# Deeper fuzzing with your own wordlist
+./snitch scan example.com --project acme --wordlist /usr/share/wordlists/dirb/big.txt
+
+# Add active SQL-injection testing with sqlmap (opt-in; scoped & deduped param URLs)
+./snitch scan example.com --project acme --sqli
 
 # Watch a target and get pinged on Discord/Slack when something new appears
-./snitch monitor example.com --project acme --wordlist wl.txt \
+./snitch monitor example.com --project acme \
     --notify https://discord.com/api/webhooks/XXX/YYY --interval 6h
 
-# Or run one cycle from cron (no --interval); snitch stays quiet if nothing's new
-./snitch monitor example.com --project acme --skip-ffuf --notify <webhook>
-
-# Reports (-open launches it in your browser)
-./snitch report --project acme -format html -o report.html -open
-
-# Browse results interactively in the terminal
+# Browse results in an interactive terminal UI
 ./snitch tui --project acme
 
-# Status / history and machine-readable export (json | csv | sarif)
-./snitch status --project acme
+# Export for other tooling (json | csv | sarif)
 ./snitch export --project acme -format sarif -o findings.sarif
+
+# Start a project over
+./snitch reset --project acme
 ```
+
+## Commands
+
+| Command   | What it does |
+|-----------|--------------|
+| `scan`    | Run the full recon + injection chain against a target |
+| `monitor` | Re-scan on a schedule and alert a webhook about what's new |
+| `report`  | Write a correlated Markdown/HTML report (`--open` to view it) |
+| `tui`     | Browse a project's results interactively |
+| `status`  | Show stored counts and recent scan history |
+| `export`  | Dump results as JSON, CSV or SARIF |
+| `reset`   | Delete a project's stored data and start fresh |
+| `version` | Print the snitch version |
+
+Run `snitch <command> -h` for that command's flags. Any recon tool that isn't
+installed is skipped with a warning — the rest of the chain still runs.
 
 ## Why Go, and why not SQLite
 
@@ -170,6 +192,7 @@ internal/report/          # Actionable Markdown + HTML reports
 internal/notify/          # Discord / Slack / generic webhook alerts
 internal/export/          # JSON / CSV / SARIF exporters
 internal/tui/             # Bubble Tea interactive results browser
+wordlists/common.txt      # bundled default ffuf wordlist
 samples/                  # Sample tool output for testing
 integration_test.go       # End-to-end pipeline test
 ```
