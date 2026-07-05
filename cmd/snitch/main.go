@@ -41,6 +41,23 @@ func dbPath(project string) string {
 	return filepath.Join(home, ".snitch", project+".json")
 }
 
+// normalizeTarget accepts either a bare host (example.com) or a full URL
+// (https://example.com/path) and reduces it to the bare host that subfinder,
+// nmap and friends expect — stripping scheme, path, credentials and trailing dot.
+func normalizeTarget(t string) string {
+	t = strings.TrimSpace(t)
+	if i := strings.Index(t, "://"); i != -1 {
+		t = t[i+3:]
+	}
+	if i := strings.IndexAny(t, "/?#"); i != -1 {
+		t = t[:i]
+	}
+	if i := strings.LastIndex(t, "@"); i != -1 { // drop user:pass@
+		t = t[i+1:]
+	}
+	return strings.ToLower(strings.TrimSuffix(t, "."))
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		printUsage()
@@ -204,7 +221,7 @@ func cmdScan(args []string) {
 		fs.PrintDefaults()
 		os.Exit(1)
 	}
-	target := fs.Arg(0)
+	target := normalizeTarget(fs.Arg(0))
 
 	ws, err := store.Open(dbPath(*sf.project), *sf.project)
 	if err != nil {
@@ -317,7 +334,7 @@ func cmdMonitor(args []string) {
 		fs.PrintDefaults()
 		os.Exit(1)
 	}
-	target := fs.Arg(0)
+	target := normalizeTarget(fs.Arg(0))
 	threshold, ok := store.SeverityRank[strings.ToLower(*minSev)]
 	if !ok {
 		fatal(fmt.Errorf("invalid -min-severity %q (use critical|high|medium|low|info)", *minSev))
