@@ -75,6 +75,8 @@ func main() {
 		cmdTui(os.Args[2:])
 	case "status":
 		cmdStatus(os.Args[2:])
+	case "reset":
+		cmdReset(os.Args[2:])
 	case "export":
 		cmdExport(os.Args[2:])
 	case "version", "--version", "-v":
@@ -97,6 +99,7 @@ Commands:
   report   Generate a correlated Markdown or HTML report
   tui      Browse a project's results in an interactive terminal UI
   status   Show stored counts and recent scan history
+  reset    Delete a project's stored data (start fresh)
   export   Dump results as JSON, CSV, or SARIF for other tooling
   version  Print the snitch version
 
@@ -519,6 +522,37 @@ func cmdStatus(args []string) {
 		fmt.Printf("  [%9s] %-8s %-30s +%da +%df +%dp\n",
 			r.Status, r.Tool, r.Target, r.NewAssets, r.NewFindings, r.NewPaths)
 	}
+}
+
+func cmdReset(args []string) {
+	fs := flag.NewFlagSet("reset", flag.ExitOnError)
+	project := fs.String("project", "", "project name (required)")
+	yes := fs.Bool("yes", false, "skip the confirmation prompt")
+	fs.Parse(args)
+
+	if *project == "" {
+		fmt.Fprintln(os.Stderr, "usage: snitch reset --project NAME [--yes]")
+		os.Exit(1)
+	}
+
+	path := dbPath(*project)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		fmt.Printf("[*] nothing to reset — no data for project %q\n", *project)
+		return
+	}
+	if !*yes {
+		fmt.Printf("Delete all stored data for project %q (%s)? [y/N] ", *project, path)
+		var resp string
+		fmt.Scanln(&resp)
+		if strings.ToLower(strings.TrimSpace(resp)) != "y" {
+			fmt.Println("aborted.")
+			return
+		}
+	}
+	if err := os.Remove(path); err != nil {
+		fatal(err)
+	}
+	fmt.Printf("[+] reset project %q — stored data deleted.\n", *project)
 }
 
 func cmdExport(args []string) {
