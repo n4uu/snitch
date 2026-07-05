@@ -33,11 +33,12 @@ ground: a single binary you can `cron` and forget, that tells you what changed.
   confirmed web targets, and katana crawls them for linked endpoints. Every
   stage is optional (`--skip-subfinder`, `--skip-naabu`, `--skip-katana`, …).
 - **Injection testing**: the parameterized URLs katana discovers — **filtered
-  to the target and its subdomains** so active payloads never reach a
-  third-party host — are fed to dalfox (XSS) and crlfuzz (CRLF) automatically,
-  and, opt-in with `--sqli`, to sqlmap. Confirmed hits land in the report as
-  priority findings with a reproduction command. sqlmap is off by default and
-  capped (`--sqli-max`) because it actively exploits.
+  to the target and its subdomains** (never a third-party host) and
+  **deduplicated by parameter signature** so `?q=1` and `?q=2` aren't tested
+  twice — are fed to dalfox (XSS) and crlfuzz (CRLF) automatically, and, opt-in
+  with `--sqli`, to sqlmap. Confirmed hits land in the report as priority
+  findings with a reproduction command. sqlmap is off by default and capped
+  (`--sqli-max`) because it actively exploits.
 - **Chained, not parallel-blind**: discovery drives what gets tested — only
   live web services reach Nuclei and ffuf, no HTTP templates fired at an SSH
   port. Findings from every tool are correlated back onto one asset per
