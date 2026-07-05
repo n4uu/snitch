@@ -23,3 +23,19 @@ func TestInScopeURLs(t *testing.T) {
 		}
 	}
 }
+
+func TestDedupeParamURLs(t *testing.T) {
+	urls := []string{
+		"https://x.com/search?q=1",            // \
+		"https://x.com/search?q=2",            //  } same host+path+param{q} -> 1
+		"https://x.com/search?q=hello",        // /
+		"https://x.com/search?category=books", // different param name -> kept
+		"https://x.com/view?id=1&ref=a",       // param set {id,ref} -> kept
+		"https://x.com/view?ref=b&id=2",       // same set {id,ref}, order/values differ -> collapsed
+		"https://x.com/other?id=9",            // different path -> kept
+	}
+	got := dedupeParamURLs(urls)
+	if len(got) != 4 {
+		t.Fatalf("expected 4 unique parameter surfaces, got %d: %v", len(got), got)
+	}
+}

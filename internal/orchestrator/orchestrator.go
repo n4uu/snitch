@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -861,9 +862,13 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 	//    active payloads, so we must never hand them a third-party host katana
 	//    happened to link to: that's out of scope AND a waste of time.
 	allParamURLs := ws.ParamURLs()
-	paramURLs := inScopeURLs(allParamURLs, target, hosts)
-	if dropped := len(allParamURLs) - len(paramURLs); dropped > 0 {
-		banner("[*] injection scope: %d in-scope URL(s), skipped %d out-of-scope", len(paramURLs), dropped)
+	scoped := inScopeURLs(allParamURLs, target, hosts)
+	if dropped := len(allParamURLs) - len(scoped); dropped > 0 {
+		banner("[*] injection scope: %d in-scope URL(s), skipped %d out-of-scope", len(scoped), dropped)
+	}
+	paramURLs := dedupeParamURLs(scoped)
+	if collapsed := len(scoped) - len(paramURLs); collapsed > 0 {
+		banner("[*] injection dedup: %d unique parameter set(s) (collapsed %d URL(s) differing only in values)", len(paramURLs), collapsed)
 	}
 	if len(paramURLs) > 0 {
 		if !opts.SkipDalfox {
@@ -919,6 +924,35 @@ func uniqueStrings(in []string) []string {
 		}
 		seen[s] = true
 		out = append(out, s)
+	}
+	return out
+}
+
+// dedupeParamURLs collapses URLs that share the same injectable surface —
+// same host, path and set of parameter NAMES — keeping one representative each.
+// Injection testers mutate parameter values, so `/s?q=1` and `/s?q=2` exercise
+// the identical test; only distinct (path, param-name-set) tuples add coverage.
+// Unparseable URLs are kept as-is rather than dropped.
+func dedupeParamURLs(urls []string) []string {
+	seen := make(map[string]bool, len(urls))
+	var out []string
+	for _, raw := range urls {
+		u, err := url.Parse(raw)
+		if err != nil {
+			out = append(out, raw)
+			continue
+		}
+		names := make([]string, 0)
+		for k := range u.Query() {
+			names = append(names, k)
+		}
+		sort.Strings(names)
+		sig := strings.ToLower(u.Host) + "|" + u.Path + "|" + strings.Join(names, ",")
+		if seen[sig] {
+			continue
+		}
+		seen[sig] = true
+		out = append(out, raw)
 	}
 	return out
 }
