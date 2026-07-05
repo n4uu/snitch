@@ -3,10 +3,21 @@ PKG     := ./cmd/snitch
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -ldflags "-X main.version=$(VERSION)"
 
-.PHONY: build install test race vet fmt fmtcheck lint clean
+.PHONY: build install tools test race vet fmt fmtcheck lint clean
 
 build: ## Build the snitch binary
 	go build $(LDFLAGS) -o $(BINARY) $(PKG)
+
+tools: ## Install the Go-based recon tools snitch orchestrates
+	go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+	go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
+	go install github.com/projectdiscovery/httpx/cmd/httpx@latest
+	go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+	go install github.com/projectdiscovery/katana/cmd/katana@latest
+	go install github.com/ffuf/ffuf/v2@latest
+	go install github.com/hahwul/dalfox/v2@latest
+	go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest
+	@echo "Done. Also install from your package manager: nmap sqlmap libpcap-dev"
 
 install: ## Install snitch into $GOPATH/bin
 	go install $(LDFLAGS) $(PKG)

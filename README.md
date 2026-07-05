@@ -64,11 +64,50 @@ ground: a single binary you can `cron` and forget, that tells you what changed.
   latter uploads straight into GitHub code scanning or DefectDojo, with
   severity mapped to `security-severity` so it buckets correctly.
 
+## Installation
+
+snitch is a single Go binary that shells out to well-known recon tools. Install
+the ones you want — any that are missing are skipped with a warning, so you can
+start with just nmap and add the rest later.
+
+**1. Prerequisites** — Go 1.22+ and git:
+
+```bash
+sudo apt install -y golang-go git          # Debian / Kali / Ubuntu
+```
+
+**2. Clone and build:**
+
+```bash
+git clone https://github.com/n4uu/snitch.git
+cd snitch
+make build            # builds ./snitch   (or: make install to put it on your PATH)
+./snitch version
+```
+
+**3. Install the recon tools** — nmap and sqlmap come from your package manager;
+the Go-based tools install in one command:
+
+```bash
+sudo apt install -y nmap sqlmap libpcap-dev   # libpcap is needed by naabu
+make tools                                    # subfinder, naabu, httpx, nuclei, katana, ffuf, dalfox, crlfuzz
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.bashrc && source ~/.bashrc
+nuclei -update-templates                      # nuclei fetches its templates once
+```
+
+> **Kali note:** ProjectDiscovery's `httpx` clashes with Python's `httpx`.
+> `make tools` installs the correct one; if you used apt's `httpx-toolkit`
+> instead, link it: `sudo ln -s $(which httpx-toolkit) /usr/local/bin/httpx`.
+
+Done. Point it at a target you own or are authorised to test:
+
+```bash
+./snitch scan yourdomain.com --project demo --report html --open
+```
+
 ## Quickstart
 
 ```bash
-go build -o snitch ./cmd/snitch
-
 # Full chain (flags can go in any order — target position is normalized)
 ./snitch scan example.com --project acme --wordlist /usr/share/wordlists/dirb/common.txt
 
@@ -131,13 +170,6 @@ internal/tui/             # Bubble Tea interactive results browser
 samples/                  # Sample tool output for testing
 integration_test.go       # End-to-end pipeline test
 ```
-
-## Requires (for live scans)
-
-`subfinder`, `naabu`, `httpx`, `nmap`, `nuclei`, `ffuf`, `katana`, `dalfox` and
-`crlfuzz` on `PATH` (plus `sqlmap` if you use `--sqli`). Most ship on Kali; the
-ProjectDiscovery/hahwul tools install via `apt` or `go install`. Any missing
-tool is reported as a warning and its stage is skipped — the rest still runs.
 
 ## Roadmap
 
