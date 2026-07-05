@@ -66,43 +66,51 @@ ground: a single binary you can `cron` and forget, that tells you what changed.
 
 ## Installation
 
-snitch is a single Go binary that shells out to well-known recon tools. Install
-the ones you want — any that are missing are skipped with a warning, so you can
-start with just nmap and add the rest later.
+snitch is a single Go binary that shells out to well-known recon tools. **You
+don't need all of them** — any that are missing are skipped with a warning, so
+even just `nmap`, `httpx`, `nuclei` and `ffuf` gives you a working scan.
 
-**1. Prerequisites** — Go 1.22+ and git:
+### On Kali (recommended — precompiled, no compiling)
+
+Kali packages almost every tool, so this is a one-liner and fast:
 
 ```bash
-sudo apt install -y golang-go git          # Debian / Kali / Ubuntu
+sudo apt update
+sudo apt install -y golang-go git nmap ffuf sqlmap \
+    subfinder httpx-toolkit naabu nuclei katana dalfox
+sudo ln -sf "$(command -v httpx-toolkit)" /usr/local/bin/httpx   # ProjectDiscovery httpx
+nuclei -update-templates
 ```
 
-**2. Clone and build:**
+Then build snitch:
 
 ```bash
 git clone https://github.com/n4uu/snitch.git
 cd snitch
-make build            # builds ./snitch   (or: make install to put it on your PATH)
+make build          # → ./snitch   (or: make install to put it on your PATH)
 ./snitch version
 ```
 
-**3. Install the recon tools** — nmap and sqlmap come from your package manager;
-the Go-based tools install in one command:
-
-```bash
-sudo apt install -y nmap sqlmap libpcap-dev   # libpcap is needed by naabu
-make tools                                    # subfinder, naabu, httpx, nuclei, katana, ffuf, dalfox, crlfuzz
-echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.bashrc && source ~/.bashrc
-nuclei -update-templates                      # nuclei fetches its templates once
-```
-
-> **Kali note:** ProjectDiscovery's `httpx` clashes with Python's `httpx`.
-> `make tools` installs the correct one; if you used apt's `httpx-toolkit`
-> instead, link it: `sudo ln -s $(which httpx-toolkit) /usr/local/bin/httpx`.
-
-Done. Point it at a target you own or are authorised to test:
+That's it. Point it at a target you own or are authorised to test:
 
 ```bash
 ./snitch scan yourdomain.com --project demo --report html --open
+```
+
+> `crlfuzz` (CRLF testing) isn't in apt — optional:
+> `go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest`.
+
+### Other distros / building the tools from source
+
+If your package manager doesn't have them, `make tools` installs every Go-based
+tool with `go install`. Heads-up: this **compiles each from source and pulls a
+lot of dependencies** (nuclei and katana are big), so it's slow — prefer your
+package manager's precompiled builds when you can.
+
+```bash
+sudo apt install -y libpcap-dev   # naabu needs libpcap
+make tools
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.bashrc && source ~/.bashrc
 ```
 
 ## Quickstart
