@@ -70,47 +70,34 @@ snitch is a single Go binary that shells out to well-known recon tools. **You
 don't need all of them** — any that are missing are skipped with a warning, so
 even just `nmap`, `httpx`, `nuclei` and `ffuf` gives you a working scan.
 
-### On Kali (recommended — precompiled, no compiling)
-
-Kali packages almost every tool, so this is a one-liner and fast:
-
-```bash
-sudo apt update
-sudo apt install -y golang-go git nmap ffuf sqlmap subfinder httpx-toolkit naabu nuclei
-sudo ln -sf "$(command -v httpx-toolkit)" /usr/local/bin/httpx   # ProjectDiscovery httpx
-nuclei -update-templates
-```
-
-Then build snitch:
+### On Kali / Debian (one command)
 
 ```bash
 git clone https://github.com/n4uu/snitch.git
 cd snitch
-make build          # → ./snitch   (or: make install to put it on your PATH)
+./install.sh        # installs EVERY tool: apt packages + the few via go install
+make build
 ./snitch version
 ```
 
-That's it. Point it at a target you own or are authorised to test:
+Then point it at a target you own or are authorised to test:
 
 ```bash
 ./snitch scan yourdomain.com --project demo --report html --open
 ```
 
-> **Optional stages** — `katana` (crawler), `dalfox` (XSS) and `crlfuzz` (CRLF)
-> aren't in apt. snitch skips them with a warning if absent; install them with
-> `go install` only if you want crawling and injection testing:
-> ```bash
-> go install github.com/projectdiscovery/katana/cmd/katana@latest
-> go install github.com/hahwul/dalfox/v2@latest
-> go install github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest
-> ```
+`install.sh` is short and readable (have a look before running it). It `apt
+install`s the packaged tools — nmap, ffuf, sqlmap, subfinder, httpx, naabu,
+nuclei — links ProjectDiscovery's httpx, then `go install`s the three that
+aren't in apt (katana, dalfox, crlfuzz) and fetches nuclei's templates. Anything
+that fails is simply skipped by snitch at scan time with a warning, so a partial
+install still works.
 
 ### Other distros / building the tools from source
 
-If your package manager doesn't have them, `make tools` installs every Go-based
-tool with `go install`. Heads-up: this **compiles each from source and pulls a
-lot of dependencies** (nuclei and katana are big), so it's slow — prefer your
-package manager's precompiled builds when you can.
+No apt? `make tools` installs every Go-based tool with `go install`. Heads-up:
+this **compiles each from source and pulls a lot of dependencies** (nuclei and
+katana are big), so it's slow — prefer precompiled packages when you can.
 
 ```bash
 sudo apt install -y libpcap-dev   # naabu needs libpcap

@@ -3,12 +3,15 @@ PKG     := ./cmd/snitch
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -ldflags "-X main.version=$(VERSION)"
 
-.PHONY: build install tools test race vet fmt fmtcheck lint clean
+.PHONY: build install setup tools test race vet fmt fmtcheck lint clean
 
 build: ## Build the snitch binary
 	go build $(LDFLAGS) -o $(BINARY) $(PKG)
 
-tools: ## Install the Go-based recon tools snitch orchestrates
+setup: ## Install every recon tool on Debian/Kali (apt + go), then you `make build`
+	./install.sh
+
+tools: ## Install just the Go-based recon tools (for non-apt distros)
 	go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 	go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
 	go install github.com/projectdiscovery/httpx/cmd/httpx@latest
