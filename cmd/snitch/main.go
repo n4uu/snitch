@@ -160,7 +160,7 @@ type scanFlags struct {
 func addScanFlags(fs *flag.FlagSet) *scanFlags {
 	return &scanFlags{
 		project:       fs.String("project", "", "project name (required)"),
-		wordlist:      fs.String("wordlist", "", "wordlist for ffuf (required unless -skip-ffuf)"),
+		wordlist:      fs.String("wordlist", "wordlists/common.txt", "wordlist for ffuf content discovery (bundled default; pass a bigger one for deeper scans)"),
 		nmapXML:       fs.String("nmap-xml", "", "existing nmap XML to ingest instead of scanning"),
 		skipSubfinder: fs.Bool("skip-subfinder", false, "skip subdomain enumeration"),
 		skipNaabu:     fs.Bool("skip-naabu", false, "skip fast port scanning"),
