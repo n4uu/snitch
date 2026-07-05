@@ -856,8 +856,15 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 		}
 	}
 
-	// 8. injection testing on the parameterized URLs the crawl turned up.
-	paramURLs := ws.ParamURLs()
+	// 8. injection testing on the parameterized URLs the crawl turned up —
+	//    scoped to the target and its subdomains. dalfox/sqlmap/crlfuzz fire
+	//    active payloads, so we must never hand them a third-party host katana
+	//    happened to link to: that's out of scope AND a waste of time.
+	allParamURLs := ws.ParamURLs()
+	paramURLs := inScopeURLs(allParamURLs, target, hosts)
+	if dropped := len(allParamURLs) - len(paramURLs); dropped > 0 {
+		banner("[*] injection scope: %d in-scope URL(s), skipped %d out-of-scope", len(paramURLs), dropped)
+	}
 	if len(paramURLs) > 0 {
 		if !opts.SkipDalfox {
 			if _, dErr := RunDalfox(ws, paramURLs, opts.Timeout); dErr != nil {
@@ -912,6 +919,27 @@ func uniqueStrings(in []string) []string {
 		}
 		seen[s] = true
 		out = append(out, s)
+	}
+	return out
+}
+
+// inScopeURLs keeps only URLs whose host is the target, a subdomain of it, or
+// one of the enumerated hosts. Used to gate the injection stage so active
+// payloads never reach a third-party host katana merely linked to.
+func inScopeURLs(urls []string, target string, hosts []string) []string {
+	target = strings.ToLower(strings.TrimSpace(target))
+	suffix := "." + target
+	inHosts := make(map[string]bool, len(hosts))
+	for _, h := range hosts {
+		inHosts[strings.ToLower(h)] = true
+	}
+	var out []string
+	for _, u := range urls {
+		_, host, _ := parsers.URLParts(u)
+		host = strings.ToLower(host)
+		if host == target || inHosts[host] || strings.HasSuffix(host, suffix) {
+			out = append(out, u)
+		}
 	}
 	return out
 }

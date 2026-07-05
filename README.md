@@ -32,9 +32,10 @@ ground: a single binary you can `cron` and forget, that tells you what changed.
   tech, status), Nmap adds service/version depth, Nuclei + ffuf run against the
   confirmed web targets, and katana crawls them for linked endpoints. Every
   stage is optional (`--skip-subfinder`, `--skip-naabu`, `--skip-katana`, …).
-- **Injection testing**: the parameterized URLs katana discovers are fed to
-  dalfox (XSS) and crlfuzz (CRLF injection) automatically, and — opt-in with
-  `--sqli` — to sqlmap for SQL injection. Confirmed hits land in the report as
+- **Injection testing**: the parameterized URLs katana discovers — **filtered
+  to the target and its subdomains** so active payloads never reach a
+  third-party host — are fed to dalfox (XSS) and crlfuzz (CRLF) automatically,
+  and, opt-in with `--sqli`, to sqlmap. Confirmed hits land in the report as
   priority findings with a reproduction command. sqlmap is off by default and
   capped (`--sqli-max`) because it actively exploits.
 - **Chained, not parallel-blind**: discovery drives what gets tested — only
