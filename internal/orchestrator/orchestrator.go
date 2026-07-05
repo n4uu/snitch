@@ -863,12 +863,10 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 	//    happened to link to: that's out of scope AND a waste of time.
 	allParamURLs := ws.ParamURLs()
 	scoped := inScopeURLs(allParamURLs, target, hosts)
-	if dropped := len(allParamURLs) - len(scoped); dropped > 0 {
-		banner("[*] injection scope: %d in-scope URL(s), skipped %d out-of-scope", len(scoped), dropped)
-	}
 	paramURLs := dedupeParamURLs(scoped)
-	if collapsed := len(scoped) - len(paramURLs); collapsed > 0 {
-		banner("[*] injection dedup: %d unique parameter set(s) (collapsed %d URL(s) differing only in values)", len(paramURLs), collapsed)
+	if len(allParamURLs) > 0 {
+		banner("[*] injection: %d param URL(s) discovered → %d in scope → %d unique to test",
+			len(allParamURLs), len(scoped), len(paramURLs))
 	}
 	if len(paramURLs) > 0 {
 		if !opts.SkipDalfox {
