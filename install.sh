@@ -26,12 +26,13 @@ for mod in \
 done
 set -e
 
+# Symlink the go-installed tools into /usr/local/bin so they're on PATH in
+# every shell (and under sudo/cron) — no per-terminal PATH fiddling needed.
 GOBIN="$(go env GOPATH)/bin"
-export PATH="$PATH:$GOBIN"
-if ! grep -qs "$GOBIN" "$HOME/.bashrc"; then
-    echo "export PATH=\"\$PATH:$GOBIN\"" >>"$HOME/.bashrc"
-    echo "[*] Added $GOBIN to PATH in ~/.bashrc (run 'source ~/.bashrc' or open a new shell)."
-fi
+echo "[*] Linking go-installed tools into /usr/local/bin ..."
+for t in katana dalfox crlfuzz; do
+    [ -x "$GOBIN/$t" ] && sudo ln -sf "$GOBIN/$t" "/usr/local/bin/$t"
+done
 
 echo "[*] Fetching nuclei templates ..."
 nuclei -update-templates || true

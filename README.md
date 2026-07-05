@@ -103,7 +103,8 @@ katana are big), so it's slow — prefer precompiled packages when you can.
 ```bash
 sudo apt install -y libpcap-dev   # naabu needs libpcap
 make tools
-echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.bashrc && source ~/.bashrc
+# put the go-installed tools on PATH for every shell (no per-terminal fiddling):
+sudo ln -sf "$(go env GOPATH)"/bin/* /usr/local/bin/
 ```
 
 ## Quickstart
