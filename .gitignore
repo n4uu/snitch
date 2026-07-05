@@ -1,0 +1,18 @@
+# Compiled binary (build it locally with `go build`)
+/snitch
+/snitch.exe
+
+# Generated reports / exports
+report-*.html
+report-*.md
+report.md
+report.html
+findings.json
+
+# Local scan data (default lives in ~/.snitch)
+.snitch/
+
+# Go / editor cruft
+*.test
+*.out
+.DS_Store
