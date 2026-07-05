@@ -1,0 +1,8 @@
+{
+  "results": [
+    {"url": "https://demo.local:443/admin", "status": 401, "length": 315},
+    {"url": "https://demo.local:443/backup", "status": 200, "length": 0},
+    {"url": "https://demo.local:443/.env", "status": 200, "length": 128},
+    {"url": "https://demo.local:443/api", "status": 301, "length": 169}
+  ]
+}

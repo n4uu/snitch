@@ -1,0 +1,4 @@
+[
+  {"type":"V","inject_type":"inHTML-URL","method":"GET","data":"https://demo.local/search?q=%3Cscript%3Ealert(1)%3C/script%3E","param":"q","payload":"<script>alert(1)</script>","evidence":"12 line: <div>alert(1)</div>","cwe":"CWE-79","severity":"high","message_str":"Triggered XSS Payload (found DOM Object)"},
+  {"type":"R","inject_type":"inATTR-URL","method":"GET","data":"https://demo.local/login?next=%22onmouseover%3Dalert(1)","param":"next","payload":"\"onmouseover=alert(1)","evidence":"reflected in attribute","cwe":"CWE-79","severity":"medium","message_str":"Reflected Payload in Attribute"}
+]

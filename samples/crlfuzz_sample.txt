@@ -1,0 +1,3 @@
+https://demo.local/redirect?url=%0d%0aSet-Cookie:crlf=1
+https://api.demo.local/v1/users?id=1%0d%0aX-Injected:1
+https://demo.local/redirect?url=%0d%0aSet-Cookie:crlf=1
