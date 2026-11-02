@@ -22,12 +22,12 @@ for mod in \
     github.com/hahwul/dalfox/v2@latest \
     github.com/dwisiswant0/crlfuzz/cmd/crlfuzz@latest; do
     echo "    go install $mod"
-    go install "$mod" || echo "    [!] failed (optional): $mod — retry later if you want it"
+    go install "$mod" || echo "    [!] failed (optional): $mod (retry later if you want it)"
 done
 set -e
 
 # Symlink the go-installed tools into /usr/local/bin so they're on PATH in
-# every shell (and under sudo/cron) — no per-terminal PATH fiddling needed.
+# every shell (and under sudo/cron), with no per-terminal PATH fiddling needed.
 GOBIN="$(go env GOPATH)/bin"
 echo "[*] Linking go-installed tools into /usr/local/bin ..."
 for t in katana dalfox crlfuzz; do

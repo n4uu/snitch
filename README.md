@@ -6,7 +6,7 @@
 **The recon tool that snitches on your attack surface.**
 
 `snitch` chains subfinder → naabu → httpx → Nmap → Nuclei → ffuf → katana into
-one correlated, deduplicated, re-runnable recon pipeline — and then *watches*
+one correlated, deduplicated, re-runnable recon pipeline, and then *watches*
 your targets: run it on a schedule and it alerts a webhook (Discord/Slack/
 anything) the moment something **new** appears. One static Go binary, no runtime
 dependencies, no infra.
@@ -32,14 +32,14 @@ ground: a single binary you can `cron` and forget, that tells you what changed.
   tech, status), Nmap adds service/version depth, Nuclei + ffuf run against the
   confirmed web targets, and katana crawls them for linked endpoints. Every
   stage is optional (`--skip-subfinder`, `--skip-naabu`, `--skip-katana`, …).
-- **Injection testing**: the parameterized URLs katana discovers — **filtered
-  to the target and its subdomains** (never a third-party host) and
-  **deduplicated by parameter signature** so `?q=1` and `?q=2` aren't tested
-  twice — are fed to dalfox (XSS) and crlfuzz (CRLF) automatically, and, opt-in
-  with `--sqli`, to sqlmap. Confirmed hits land in the report as priority
+- **Injection testing**: the parameterized URLs katana discovers are
+  **filtered to the target and its subdomains** (never a third-party host) and
+  **deduplicated by parameter signature**, so `?q=1` and `?q=2` aren't tested
+  twice. What's left goes to dalfox (XSS) and crlfuzz (CRLF) automatically,
+  and, opt-in with `--sqli`, to sqlmap. Confirmed hits land in the report as priority
   findings with a reproduction command. sqlmap is off by default and capped
   (`--sqli-max`) because it actively exploits.
-- **Chained, not parallel-blind**: discovery drives what gets tested — only
+- **Chained, not parallel-blind**: discovery drives what gets tested: only
   live web services reach Nuclei and ffuf, no HTTP templates fired at an SSH
   port. Findings from every tool are correlated back onto one asset per
   host:port (nmap's service + httpx's title/tech merged into a single row).
@@ -47,29 +47,29 @@ ground: a single binary you can `cron` and forget, that tells you what changed.
   seen before, and POST an alert to a Discord/Slack/generic webhook when a new
   service or finding shows up. Auto-detects the webhook type from the URL.
 - **Deduplication with a real dedup key**: re-run next week and you see what's
-  *new*, not the same 200 rows — verified under `go test -race` with 20
+  *new*, not the same 200 rows, verified under `go test -race` with 20
   concurrent goroutines writing at once.
 - **Concurrent ffuf**: every web target fuzzed in its own goroutine, bounded by
   a worker pool (`-workers`, default 5).
 - **Live progress**: each tool's output streams line by line with elapsed-time
-  banners and heartbeats — no more staring at a frozen terminal.
+  banners and heartbeats, so you're never staring at a frozen terminal.
 - **Actionable reports, not data dumps**: findings split into *priority*
   (critical/high/medium) and *informational*, each priority finding expanded
   with description, remediation, CVE/CVSS, references and a reproduction `curl`
-  command — plus a "how to act on this report" triage section.
+  command, plus a "how to act on this report" triage section.
 - **Interactive TUI**: `snitch tui --project X` opens a Bubble Tea terminal UI
   to page through subdomains, services, findings (colour-coded by severity) and
   crawled paths, with a detail pane showing a finding's remediation and repro.
 - **One-command flow**: `scan --report html --open` runs the chain and pops the
   finished report open in your browser.
-- **Export** to JSON, CSV (a flat findings sheet), or **SARIF 2.1.0** — the
+- **Export** to JSON, CSV (a flat findings sheet), or **SARIF 2.1.0**, the
   latter uploads straight into GitHub code scanning or DefectDojo, with
   severity mapped to `security-severity` so it buckets correctly.
 
 ## Installation
 
 snitch is a single Go binary that shells out to well-known recon tools. **You
-don't need all of them** — any that are missing are skipped with a warning, so
+don't need all of them**: any that are missing are skipped with a warning, so
 even just `nmap`, `httpx`, `nuclei` and `ffuf` gives you a working scan.
 
 ### On Kali / Debian (one command)
@@ -89,8 +89,8 @@ Then point it at a target you own or are authorised to test:
 ```
 
 `install.sh` is short and readable (have a look before running it). It `apt
-install`s the packaged tools — nmap, ffuf, sqlmap, subfinder, httpx, naabu,
-nuclei — links ProjectDiscovery's httpx, then `go install`s the three that
+install`s the packaged tools (nmap, ffuf, sqlmap, subfinder, httpx, naabu,
+nuclei), links ProjectDiscovery's httpx, then `go install`s the three that
 aren't in apt (katana, dalfox, crlfuzz) and fetches nuclei's templates. Anything
 that fails is simply skipped by snitch at scan time with a warning, so a partial
 install still works.
@@ -99,7 +99,7 @@ install still works.
 
 No apt? `make tools` installs every Go-based tool with `go install`. Heads-up:
 this **compiles each from source and pulls a lot of dependencies** (nuclei and
-katana are big), so it's slow — prefer precompiled packages when you can.
+katana are big), so it's slow; prefer precompiled packages when you can.
 
 ```bash
 sudo apt install -y libpcap-dev   # naabu needs libpcap
@@ -110,7 +110,7 @@ sudo ln -sf "$(go env GOPATH)"/bin/* /usr/local/bin/
 
 ## Quickstart
 
-All you need is a **target** (a bare domain *or* a full URL — snitch normalizes
+All you need is a **target** (a bare domain *or* a full URL; snitch normalizes
 it) and a **project** name to store results under. ffuf uses the bundled
 `wordlists/common.txt` by default, so you don't have to pass one:
 
@@ -133,7 +133,7 @@ That runs the whole chain and pops a correlated HTML report open. More:
 # A lab box by IP, all 65535 ports (subfinder auto-skips for an IP)
 ./snitch scan 10.10.10.5 --project lab --full-ports
 
-# Enumeration only — skips nuclei/dalfox/crlfuzz/sqlmap (e.g. OSCP-legal recon)
+# Enumeration only: skips nuclei/dalfox/crlfuzz/sqlmap (e.g. OSCP-legal recon)
 ./snitch scan 10.10.10.5 --project lab --enum-only --full-ports
 
 # Watch a target and get pinged on Discord/Slack when something new appears
@@ -164,13 +164,13 @@ That runs the whole chain and pops a correlated HTML report open. More:
 | `version` | Print the snitch version |
 
 Run `snitch <command> -h` for that command's flags. Any recon tool that isn't
-installed is skipped with a warning — the rest of the chain still runs.
+installed is skipped with a warning and the rest of the chain still runs.
 
 ## Why Go, and why not SQLite
 
 Go's standard SQLite driver needs CGO, which defeats the "ship one static
 binary" advantage that's the whole reason to use Go for a CLI like this.
-Storage is a JSON file guarded by a mutex — plenty for a project's recon data
+Storage is a JSON file guarded by a mutex, which is plenty for a project's recon data
 (thousands of rows, not millions) and no database to stand up. The scan
 pipeline, storage and alerts use only the standard library; the only
 third-party code is the pure-Go Bubble Tea stack behind `tui`. Everything still
@@ -185,7 +185,7 @@ go test -race ./... # concurrency test + webhook delivery test
 ```
 
 `integration_test.go` runs the whole parse → dedup → report pipeline against
-the sample files in `samples/` — no live nmap/nuclei/ffuf needed.
+the sample files in `samples/`, so no live nmap/nuclei/ffuf is needed.
 
 ## Architecture
 

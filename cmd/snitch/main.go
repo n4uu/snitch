@@ -1,7 +1,7 @@
 // Command snitch runs a full recon chain (subfinder, naabu, httpx, nmap,
 // nuclei, ffuf, katana, dalfox, crlfuzz and optionally sqlmap) into one
-// correlated, deduplicated, re-runnable workspace, and snitches — alerts a
-// webhook — when your attack surface changes between runs.
+// correlated, deduplicated, re-runnable workspace, and snitches (alerts a
+// webhook) when your attack surface changes between runs.
 //
 // Usage:
 //
@@ -43,7 +43,7 @@ func dbPath(project string) string {
 
 // normalizeTarget accepts either a bare host (example.com) or a full URL
 // (https://example.com/path) and reduces it to the bare host that subfinder,
-// nmap and friends expect — stripping scheme, path, credentials and trailing dot.
+// nmap and friends expect: stripping scheme, path, credentials and trailing dot.
 func normalizeTarget(t string) string {
 	t = strings.TrimSpace(t)
 	if i := strings.Index(t, "://"); i != -1 {
@@ -110,7 +110,7 @@ Run 'snitch <command> -h' for command-specific flags.`)
 // regardless of where the user typed it, so `scan TARGET --project X` and
 // `scan --project X TARGET` both work. Go's flag package otherwise stops
 // parsing at the first non-flag token, silently dropping everything after
-// it — a sharp edge that isn't obvious until a flag you typed gets ignored.
+// it, a sharp edge that isn't obvious until a flag you typed gets ignored.
 // boolFlags lists flag names that take no separate value argument.
 func reorderArgs(args []string, boolFlags map[string]bool) []string {
 	var flagArgs, positional []string
@@ -275,7 +275,7 @@ func cmdScan(args []string) {
 		if aerr != nil {
 			fmt.Fprintf(os.Stderr, "[!] alert delivery failed: %v\n", aerr)
 		} else if sent {
-			fmt.Printf("[+] Alert sent to webhook — %d finding(s), %d service(s)\n", nf, na)
+			fmt.Printf("[+] Alert sent to webhook: %d finding(s), %d service(s)\n", nf, na)
 		}
 	}
 
@@ -335,13 +335,13 @@ func openInBrowser(path string) error {
 }
 
 // cmdMonitor runs a scan cycle and alerts a webhook about what's NEW since the
-// cycle started — the feature snitch is named for. With -interval it keeps
+// cycle started, which is the feature snitch is named for. With -interval it keeps
 // looping so you can leave it running (or fire it from cron without -interval).
 func cmdMonitor(args []string) {
 	args = reorderArgs(args, scanBoolFlags())
 	fs := flag.NewFlagSet("monitor", flag.ExitOnError)
 	sf := addScanFlags(fs)
-	notifyURL := fs.String("notify", "", "webhook URL for alerts — Discord/Slack/generic (required)")
+	notifyURL := fs.String("notify", "", "webhook URL for alerts: Discord, Slack or generic (required)")
 	interval := fs.Duration("interval", 0, "repeat every interval (e.g. 6h); default: run once and exit")
 	minSev := fs.String("min-severity", "info", "only alert on new findings at or above this severity")
 	quiet := fs.Bool("quiet-if-empty", true, "skip the webhook call when a cycle finds nothing new")
@@ -379,9 +379,9 @@ func cmdMonitor(args []string) {
 			return
 		}
 		if sent {
-			fmt.Printf("[+] snitch: alert sent — %d new finding(s), %d new service(s)\n", nf, na)
+			fmt.Printf("[+] snitch: alert sent, %d new finding(s), %d new service(s)\n", nf, na)
 		} else {
-			fmt.Println("[*] snitch: nothing new this cycle — no alert sent")
+			fmt.Println("[*] snitch: nothing new this cycle, no alert sent")
 		}
 	}
 
@@ -436,7 +436,7 @@ func buildAlert(project, target string, findings []*store.Finding, assets []*sto
 			if f.CVSSScore > 0 {
 				risk = fmt.Sprintf(" (CVSS %.1f)", f.CVSSScore)
 			}
-			fmt.Fprintf(&b, "• [%s] %s — `%s`%s\n", strings.ToUpper(f.Severity), f.Name, f.Host, risk)
+			fmt.Fprintf(&b, "• [%s] %s: `%s`%s\n", strings.ToUpper(f.Severity), f.Name, f.Host, risk)
 		}
 	}
 	if len(assets) > 0 {
@@ -552,7 +552,7 @@ func cmdReset(args []string) {
 
 	path := dbPath(*project)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		fmt.Printf("[*] nothing to reset — no data for project %q\n", *project)
+		fmt.Printf("[*] nothing to reset: no data for project %q\n", *project)
 		return
 	}
 	if !*yes {
@@ -567,7 +567,7 @@ func cmdReset(args []string) {
 	if err := os.Remove(path); err != nil {
 		fatal(err)
 	}
-	fmt.Printf("[+] reset project %q — stored data deleted.\n", *project)
+	fmt.Printf("[+] reset project %q: stored data deleted.\n", *project)
 }
 
 func cmdExport(args []string) {

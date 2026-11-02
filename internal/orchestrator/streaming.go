@@ -86,7 +86,7 @@ func streamLines(r io.Reader, prefix string, print bool, wg *sync.WaitGroup) {
 // heartbeat prints a periodic reassurance line while a stage runs, so a tool
 // that goes quiet (nmap during host discovery, ffuf between hits) doesn't look
 // hung. The message is produced by a callback so callers can fold in live
-// state — e.g. how many ffuf targets have finished so far.
+// state, e.g. how many ffuf targets have finished so far.
 type heartbeat struct {
 	stop chan struct{}
 	done chan struct{}

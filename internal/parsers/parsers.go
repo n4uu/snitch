@@ -139,8 +139,8 @@ type nucleiClass struct {
 
 // ParsedFinding is the parser's plain output for one Nuclei match. Beyond the
 // bare name/severity, it carries the context nuclei already ships in each
-// template — description, remediation, CVE/CVSS, references, and a
-// reproduction curl command — so the report can tell you what to DO about a
+// template (description, remediation, CVE/CVSS, references, and a
+// reproduction curl command) so the report can tell you what to DO about a
 // finding, not just that it exists.
 type ParsedFinding struct {
 	Host             string
@@ -577,7 +577,7 @@ func ParseDalfoxJSON(path string) ([]ParsedFinding, error) {
 	var out []ParsedFinding
 	for _, p := range pocs {
 		if strings.TrimSpace(p.Data) == "" {
-			continue // no location to act on / report — skip it
+			continue // no location to act on or report; skip it
 		}
 		_, host, port := splitURL(p.Data)
 		sev := strings.ToLower(strings.TrimSpace(p.Severity))
@@ -670,7 +670,7 @@ func splitURL(raw string) (scheme, host string, port int) {
 		scheme = raw[:i]
 		rest = raw[i+3:]
 	}
-	// Cut the authority off at the first path / query / fragment delimiter —
+	// Cut the authority off at the first path / query / fragment delimiter:
 	// not just '/', or a URL like "host?q=1" (no path) keeps the query in host.
 	if i := strings.IndexAny(rest, "/?#"); i != -1 {
 		rest = rest[:i]

@@ -9,8 +9,8 @@ func TestInScopeURLs(t *testing.T) {
 		"https://example.com/a?x=1",        // target itself
 		"https://www.example.com/b?y=1",    // enumerated host
 		"https://api.example.com/c?z=1",    // subdomain (suffix match)
-		"https://cdn.thirdparty.com/d?e=1", // third-party — must be dropped
-		"http://evil.com/?q=1",             // out of scope — must be dropped
+		"https://cdn.thirdparty.com/d?e=1", // third-party, must be dropped
+		"http://evil.com/?q=1",             // out of scope, must be dropped
 	}
 
 	got := inScopeURLs(urls, target, hosts)

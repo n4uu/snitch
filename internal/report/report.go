@@ -133,7 +133,7 @@ func GenerateMarkdown(ws *store.Workspace) string {
 	priority := priorityFindings(findings)
 
 	var b strings.Builder
-	fmt.Fprintf(&b, "# snitch report — %s\n\n", ws.Project)
+	fmt.Fprintf(&b, "# snitch report: %s\n\n", ws.Project)
 	fmt.Fprintf(&b, "_Generated %s_\n\n", time.Now().UTC().Format(time.RFC3339))
 
 	fmt.Fprint(&b, "## Summary\n\n")
@@ -279,7 +279,7 @@ const howToActMarkdown = `## How to act on this report
 1. **Start with Priority findings below.** They are ordered critical → high →
    medium. Informational and low findings are context (detected technologies,
    missing hardening headers), not directly exploitable on their own.
-2. **Verify before you report.** Automated scanners produce false positives —
+2. **Verify before you report.** Automated scanners produce false positives;
    confirm each priority finding manually (use the reproduction command shown
    with it) before treating it as real.
 3. **Read "How to fix".** Each priority finding includes nuclei's remediation
@@ -326,7 +326,7 @@ const htmlTemplateSrc = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>snitch report — {{.Project}}</title>
+<title>snitch report: {{.Project}}</title>
 <style>
   :root { color-scheme: dark; }
   body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; background: #0d1117; color: #c9d1d9; max-width: 980px; margin: 2rem auto; padding: 0 1rem; line-height: 1.55; }
@@ -367,7 +367,7 @@ const htmlTemplateSrc = `<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <h1>🕵️ snitch report — {{.Project}}</h1>
+  <h1>🕵️ snitch report: {{.Project}}</h1>
   <p class="muted">Generated {{.Generated}}</p>
 
   <div class="summary">
@@ -393,8 +393,8 @@ const htmlTemplateSrc = `<!DOCTYPE html>
   <div class="howto">
     <ol>
       <li><strong>Start with Priority findings.</strong> Ordered critical → high → medium. Informational/low findings are context (detected tech, missing hardening headers), not directly exploitable on their own.</li>
-      <li><strong>Verify before reporting.</strong> Scanners produce false positives — confirm each priority finding manually (use the reproduction command) before treating it as real.</li>
-      <li><strong>Read "How to fix".</strong> Each priority finding carries nuclei's remediation guidance and reference links — your starting point for the writeup.</li>
+      <li><strong>Verify before reporting.</strong> Scanners produce false positives; confirm each priority finding manually (use the reproduction command) before treating it as real.</li>
+      <li><strong>Read "How to fix".</strong> Each priority finding carries nuclei's remediation guidance and reference links; your starting point for the writeup.</li>
       <li><strong>Correlate per host.</strong> The per-host section ties services, findings and discovered paths together for the full picture of each target.</li>
     </ol>
   </div>

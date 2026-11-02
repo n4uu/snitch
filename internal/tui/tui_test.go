@@ -11,7 +11,7 @@ import (
 )
 
 // Bubble Tea models are pure functions, so we can drive the TUI headlessly:
-// feed it messages via Update and assert on the string View returns — no TTY.
+// feed it messages via Update and assert on the string View returns, no TTY needed.
 func TestModelRendersAndNavigates(t *testing.T) {
 	ws, err := store.Open(filepath.Join(t.TempDir(), "tui.json"), "tui-demo")
 	if err != nil {

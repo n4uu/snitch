@@ -11,7 +11,7 @@ import (
 )
 
 // TestFullPipeline proves parsing, dedup, and correlated reporting all work
-// end to end using sample tool output — no live nmap/nuclei/ffuf required.
+// end to end using sample tool output; no live nmap/nuclei/ffuf required.
 // It also ingests everything TWICE to prove dedup actually prevents
 // duplicate rows on a second run.
 func TestFullPipeline(t *testing.T) {
@@ -165,7 +165,7 @@ func TestFullPipeline(t *testing.T) {
 	}
 
 	// httpx's demo.local:443 must MERGE onto nmap's existing 443 asset (same
-	// host:port), not create a duplicate — and carry both nmap's product and
+	// host:port), not create a duplicate, and carry both nmap's product and
 	// httpx's title/tech.
 	var web443 *store.Asset
 	for _, a := range ws.AllAssets() {

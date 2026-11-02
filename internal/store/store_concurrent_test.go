@@ -11,7 +11,7 @@ import (
 // workspace from many goroutines at once (one per fuzzed target) and
 // checks two things under `go test -race`:
 //  1. No data race on the underlying maps (mutex actually protects them).
-//  2. Dedup still holds under concurrency — inserting the same path from
+//  2. Dedup still holds under concurrency: inserting the same path from
 //     20 goroutines at once must still end up as exactly ONE stored row.
 func TestConcurrentUpserts(t *testing.T) {
 	dbPath := filepath.Join(t.TempDir(), "concurrent-test.json")

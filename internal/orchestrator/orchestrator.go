@@ -80,7 +80,7 @@ func RunNmap(ws *store.Workspace, target string, extraArgs []string, timeout tim
 		}
 	}
 	ws.FinishRun(run, "completed", newCount, 0, 0)
-	banner("[+] nmap: done in %s — %d open service(s), %d new", fmtElapsed(start), len(assets), newCount)
+	banner("[+] nmap: done in %s, %d open service(s), %d new", fmtElapsed(start), len(assets), newCount)
 	return assets, nil
 }
 
@@ -147,7 +147,7 @@ func RunSubfinder(ws *store.Workspace, domain string, timeout time.Duration) ([]
 		}
 	}
 	ws.FinishRun(run, "completed", newCount, 0, 0)
-	banner("[+] subfinder: done in %s — %d subdomain(s), %d new", fmtElapsed(start), len(hosts), newCount)
+	banner("[+] subfinder: done in %s, %d subdomain(s), %d new", fmtElapsed(start), len(hosts), newCount)
 	return hosts, nil
 }
 
@@ -213,7 +213,7 @@ func RunHttpx(ws *store.Workspace, hosts []string, timeout time.Duration) ([]str
 		webTargets = append(webTargets, s.URL)
 	}
 	ws.FinishRun(run, "completed", newCount, 0, 0)
-	banner("[+] httpx: done in %s — %d live web service(s), %d new", fmtElapsed(start), len(services), newCount)
+	banner("[+] httpx: done in %s, %d live web service(s), %d new", fmtElapsed(start), len(services), newCount)
 	return uniqueStrings(webTargets), nil
 }
 
@@ -271,7 +271,7 @@ func RunNaabu(ws *store.Workspace, hosts []string, allPorts bool, timeout time.D
 		}
 	}
 	ws.FinishRun(run, "completed", newCount, 0, 0)
-	banner("[+] naabu: done in %s — %d open port(s), %d new", fmtElapsed(start), len(ports), newCount)
+	banner("[+] naabu: done in %s, %d open port(s), %d new", fmtElapsed(start), len(ports), newCount)
 	return newCount, nil
 }
 
@@ -313,7 +313,7 @@ func RunKatana(ws *store.Workspace, webTargets []string, target string, hosts []
 		return 0, err
 	}
 
-	// Only keep endpoints on in-scope hosts — katana follows links to CDNs,
+	// Only keep endpoints on in-scope hosts: katana follows links to CDNs,
 	// social media and other third parties, which are just noise in the report
 	// (and out of scope for anything active).
 	inScope := scopeMatcher(target, hosts)
@@ -335,7 +335,7 @@ func RunKatana(ws *store.Workspace, webTargets []string, target string, hosts []
 		}
 	}
 	ws.FinishRun(run, "completed", 0, 0, newCount)
-	msg := fmt.Sprintf("[+] katana: done in %s — %d in-scope endpoint(s), %d new", fmtElapsed(start), kept, newCount)
+	msg := fmt.Sprintf("[+] katana: done in %s, %d in-scope endpoint(s), %d new", fmtElapsed(start), kept, newCount)
 	if external > 0 {
 		msg += fmt.Sprintf(" (%d external skipped)", external)
 	}
@@ -407,7 +407,7 @@ func RunDalfox(ws *store.Workspace, urls []string, timeout time.Duration) (int, 
 		return newCount, err
 	}
 	ws.FinishRun(run, "completed", 0, newCount, 0)
-	banner("[+] dalfox: done in %s — %d XSS finding(s), %d new", fmtElapsed(start), len(findings), newCount)
+	banner("[+] dalfox: done in %s, %d XSS finding(s), %d new", fmtElapsed(start), len(findings), newCount)
 	return newCount, nil
 }
 
@@ -462,7 +462,7 @@ func RunCrlfuzz(ws *store.Workspace, urls []string, timeout time.Duration) (int,
 		return newCount, err
 	}
 	ws.FinishRun(run, "completed", 0, newCount, 0)
-	banner("[+] crlfuzz: done in %s — %d CRLF finding(s), %d new", fmtElapsed(start), len(findings), newCount)
+	banner("[+] crlfuzz: done in %s, %d CRLF finding(s), %d new", fmtElapsed(start), len(findings), newCount)
 	return newCount, nil
 }
 
@@ -516,7 +516,7 @@ func RunSqlmap(ws *store.Workspace, urls []string, maxURLs int, timeout time.Dur
 		}
 		ws.FinishRun(run, "completed", 0, 1, 0)
 	}
-	banner("[+] sqlmap: done in %s — %d injectable URL(s)", fmtElapsed(start), newCount)
+	banner("[+] sqlmap: done in %s, %d injectable URL(s)", fmtElapsed(start), newCount)
 	return newCount, nil
 }
 
@@ -571,7 +571,7 @@ func RunNuclei(ws *store.Workspace, webTargets []string, extraArgs []string, tim
 	banner("[*] nuclei: testing %d web target(s) …", len(webTargets))
 	start := time.Now()
 	cmd := exec.CommandContext(ctx, "nuclei", args...)
-	// Mute nuclei's stdout — it just echoes the JSONL we already save to file;
+	// Mute nuclei's stdout: it just echoes the JSONL we already save to file;
 	// the useful [INF]/stats progress comes on stderr.
 	if err := runStreaming(cmd, "nuclei", false, true); err != nil {
 		ws.FinishRun(run, "failed", 0, 0, 0)
@@ -604,7 +604,7 @@ func RunNuclei(ws *store.Workspace, webTargets []string, extraArgs []string, tim
 		}
 	}
 	ws.FinishRun(run, "completed", 0, newCount, 0)
-	banner("[+] nuclei: done in %s — %d finding(s), %d new", fmtElapsed(start), len(findings), newCount)
+	banner("[+] nuclei: done in %s, %d finding(s), %d new", fmtElapsed(start), len(findings), newCount)
 	return findings, nil
 }
 
@@ -675,7 +675,7 @@ func RunFfufConcurrent(ws *store.Workspace, webTargets []string, wordlist string
 		all = append(all, r.paths...)
 	}
 	hb.Stop()
-	banner("[+] ffuf: done in %s — %d path(s) across %d target(s)", fmtElapsed(start), len(all), total)
+	banner("[+] ffuf: done in %s, %d path(s) across %d target(s)", fmtElapsed(start), len(all), total)
 	return all, firstErr
 }
 
@@ -729,7 +729,7 @@ func runFfufOne(ws *store.Workspace, target, wordlist string, timeout time.Durat
 		}
 	}
 	ws.FinishRun(run, "completed", 0, 0, newCount)
-	banner("      ffuf ✓ %s — %d path(s), %d new (%s)", host, len(paths), newCount, fmtElapsed(start))
+	banner("      ffuf ✓ %s: %d path(s), %d new (%s)", host, len(paths), newCount, fmtElapsed(start))
 	return paths, nil
 }
 
@@ -845,14 +845,14 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 		webTargets = WebTargetsFromAssets(assets)
 	}
 	if len(webTargets) == 0 && (!opts.SkipNuclei || !opts.SkipFfuf) {
-		banner("[*] No web services found — nothing for nuclei/ffuf to test")
+		banner("[*] No web services found: nothing for nuclei/ffuf to test")
 	}
 
 	// 5. nuclei: vulnerability templates against the confirmed web targets.
 	if !opts.SkipNuclei {
 		if _, nErr := RunNuclei(ws, webTargets, nil, opts.Timeout); nErr != nil {
 			// A nuclei failure shouldn't throw away data we already stored or
-			// block later stages — record it and carry on.
+			// block later stages: record it and carry on.
 			warnings = append(warnings, nErr.Error())
 			banner("[!] nuclei: %v", nErr)
 		}
@@ -879,7 +879,7 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 		}
 	}
 
-	// 8. injection testing on the parameterized URLs the crawl turned up —
+	// 8. injection testing on the parameterized URLs the crawl turned up:
 	//    scoped to the target and its subdomains. dalfox/sqlmap/crlfuzz fire
 	//    active payloads, so we must never hand them a third-party host katana
 	//    happened to link to: that's out of scope AND a waste of time.
@@ -910,7 +910,7 @@ func FullChain(ws *store.Workspace, target string, opts ChainOptions) (*Summary,
 			}
 		}
 	} else if (!opts.SkipDalfox || !opts.SkipCrlfuzz || opts.SQLi) && !opts.SkipKatana {
-		banner("[*] No parameterized URLs discovered — nothing to injection-test")
+		banner("[*] No parameterized URLs discovered: nothing to injection-test")
 	}
 
 	return &Summary{
@@ -948,8 +948,8 @@ func uniqueStrings(in []string) []string {
 	return out
 }
 
-// dedupeParamURLs collapses URLs that share the same injectable surface —
-// same host, path and set of parameter NAMES — keeping one representative each.
+// dedupeParamURLs collapses URLs that share the same injectable surface
+// (same host, path and set of parameter NAMES), keeping one representative each.
 // Injection testers mutate parameter values, so `/s?q=1` and `/s?q=2` exercise
 // the identical test; only distinct (path, param-name-set) tuples add coverage.
 // Unparseable URLs are kept as-is rather than dropped.

@@ -1,7 +1,7 @@
 // Package tui is an interactive terminal browser for a snitch workspace, built
 // on Bubble Tea. It opens a stored project and lets you page through the
 // discovered subdomains, services, findings and crawled paths with the arrow
-// keys — findings colour-coded by severity, with a detail pane (Enter) showing
+// keys: findings colour-coded by severity, with a detail pane (Enter) showing
 // the description, remediation and reproduction command for a selected finding.
 package tui
 
@@ -225,7 +225,7 @@ func (m model) View() string {
 		return "loading…"
 	}
 
-	title := titleBar.Render("🕵️  snitch — " + m.ws.Project)
+	title := titleBar.Render("🕵️  snitch: " + m.ws.Project)
 	summary := footer.Render(fmt.Sprintf("  %d subdomains · %d services · %d findings · %d paths",
 		len(m.ws.AllSubdomains()), len(m.ws.AllAssets()), len(m.ws.AllFindings()), len(m.ws.AllPaths())))
 	header := lipgloss.JoinHorizontal(lipgloss.Center, title, summary)

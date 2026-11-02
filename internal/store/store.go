@@ -1,5 +1,5 @@
-// Package store persists a snitch project — subdomains, services, findings,
-// paths and run history — as a JSON snapshot backed by mutex-guarded in-memory
+// Package store persists a snitch project (subdomains, services, findings,
+// paths and run history) as a JSON snapshot backed by mutex-guarded in-memory
 // maps.
 //
 // Not SQLite: its Go driver needs CGO, which would forfeit the single static
@@ -205,7 +205,7 @@ func (w *Workspace) UpsertAsset(a *Asset) (bool, error) {
 	defer w.mu.Unlock()
 
 	// Keyed by host:port:protocol (not service) so the same endpoint described
-	// by two tools — nmap's "ssl/http" and httpx's "https" on 443 — collapses
+	// by two tools (nmap's "ssl/http" and httpx's "https" on 443) collapses
 	// into one asset that accumulates both tools' detail instead of duplicating.
 	key := dedupKey(w.Project, a.Host, fmt.Sprint(a.Port), a.Protocol)
 	now := time.Now().UTC()
@@ -394,7 +394,7 @@ func (w *Workspace) SubdomainsSince(t time.Time) []*Subdomain {
 
 // ParamURLs returns discovered URLs that carry a query string (contain "?"),
 // de-duplicated. These are the candidates worth handing to injection testers
-// (dalfox/crlfuzz/sqlmap) — a URL with no parameters has nothing to inject.
+// (dalfox/crlfuzz/sqlmap): a URL with no parameters has nothing to inject.
 func (w *Workspace) ParamURLs() []string {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -480,7 +480,7 @@ func (w *Workspace) PathsSince(t time.Time) []*WebPath {
 }
 
 // SinceLastRun returns assets/findings/paths whose FirstSeen is after the
-// start time of the second-to-last completed run — i.e. "what's new since
+// start time of the second-to-last completed run, i.e. "what's new since
 // the previous scan". Used by the report's diff section.
 func (w *Workspace) SinceLastRun() (time.Time, bool) {
 	w.mu.Lock()
