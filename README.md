@@ -72,6 +72,14 @@ snitch is a single Go binary that shells out to well-known recon tools. **You
 don't need all of them**: any that are missing are skipped with a warning, so
 even just `nmap`, `httpx`, `nuclei` and `ffuf` gives you a working scan.
 
+### Prebuilt binary
+
+Binaries for Linux, macOS and Windows (amd64 and arm64) are on the
+[releases page](https://github.com/n4uu/snitch/releases/latest), built by GitHub
+Actions with a signed build provenance attestation
+(`gh attestation verify snitch_*_linux_amd64.tar.gz -R n4uu/snitch`). You still
+need the recon tools below on your PATH.
+
 ### On Kali / Debian (one command)
 
 ```bash

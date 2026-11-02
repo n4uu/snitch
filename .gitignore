@@ -16,3 +16,4 @@ findings.json
 *.test
 *.out
 .DS_Store
+/dist/
